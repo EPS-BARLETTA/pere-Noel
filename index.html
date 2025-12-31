@@ -1,201 +1,1277 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mes vœux</title>
-
+  <title>ConjuFun – Atelier des conjugaisons</title>
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: radial-gradient(circle at top, #1f6f43, #06130b 60%, #000);
-      color: #fff;
-      overflow: hidden;
-      user-select: none;
-    }
-
-    /* PAGE DE GARDE */
-    .cover {
-      height: 100%;
-      display: grid;
-      place-items: center;
-      text-align: center;
-    }
-
-    .box {
-      padding: 40px 32px;
-      border-radius: 24px;
-      background: rgba(0,0,0,.45);
-      border: 1px solid rgba(255,255,255,.15);
-      box-shadow: 0 20px 60px rgba(0,0,0,.5);
-      backdrop-filter: blur(8px);
-    }
-
-    h1 {
-      margin: 0 0 20px;
-      font-size: clamp(26px, 5vw, 40px);
-    }
-
-    button {
-      cursor: pointer;
-      border: none;
-      border-radius: 18px;
-      padding: 16px 22px;
-      font-size: 18px;
-      font-weight: 700;
-      background: linear-gradient(135deg, #ff4444, #ffcc00);
-      color: #1a0c00;
-      box-shadow: 0 14px 35px rgba(255, 120, 0, .35);
-    }
-
-    button:active { transform: scale(0.97); }
-
-    /* OVERLAY PLEIN ÉCRAN */
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: #000;
-      display: grid;
-      place-items: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .2s ease;
-    }
-    .overlay.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .finger {
-      position: relative;
-      z-index: 2;
-      font-size: min(65vh, 65vw);
-      line-height: 1;
-      animation: pop .2s ease-out, shake 1.2s ease-in-out infinite .2s;
-    }
-
-    @keyframes pop {
-      from { transform: scale(.8); }
-      to   { transform: scale(1); }
-    }
-    @keyframes shake {
-      0%, 100% { transform: rotate(-2deg); }
-      50% { transform: rotate(2deg); }
-    }
-
-    .hint {
-      position: fixed;
-      bottom: 16px;
-      font-size: 13px;
-      opacity: .7;
-      z-index: 3;
-    }
-
-    /* NEIGE */
-    canvas {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 1; /* devant le fond, derrière le doigt */
-    }
+    :root{font-family:"Poppins","Trebuchet MS",Verdana,sans-serif;--bg:#dbe8ff;--bg-2:#b6cbff;--card:#fff;--ink:#0f2442;--muted:#5a6d8c;--accent:#3f8bff;--accent-dark:#2f60ff;--accent-alt:#6aa5ff;--border:rgba(63,139,255,.25);}
+    *{box-sizing:border-box;}
+    body{margin:0;min-height:100vh;padding:24px;background:linear-gradient(135deg,#f1f5ff 0%,#cadeff 50%,#8fb8ff 100%);color:var(--ink);display:flex;align-items:center;justify-content:center;}
+    body::before,body::after{content:"";position:fixed;border-radius:50%;opacity:.25;z-index:0;}
+    body::before{width:280px;height:280px;background:rgba(111,164,255,.25);top:5%;left:8%;}
+    body::after{width:360px;height:360px;background:rgba(63,139,255,.2);bottom:4%;right:6%;}
+    .app{position:relative;width:min(1180px,100%);background:var(--card);border-radius:36px;padding:34px;box-shadow:0 30px 80px rgba(15,36,66,.2);z-index:1;overflow:hidden;}
+    .app::after{content:"✨";position:absolute;top:18px;right:34px;font-size:3.8rem;animation:float 4s ease-in-out infinite;opacity:.18;color:var(--accent);}
+    @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+    .screen{display:none;}
+    .screen.active{display:block;}
+    .cover-hero{text-align:center;padding:110px 20px;display:flex;flex-direction:column;gap:14px;align-items:center;}
+    .cover-logo{font-size:clamp(2.6rem,6vw,3.8rem);font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:transparent;background:linear-gradient(120deg,#4ba6ff,#2f63ff);-webkit-background-clip:text;background-clip:text;text-shadow:0 12px 30px rgba(15,36,66,.25);}
+    .cover-hero h1{font-size:clamp(2rem,5vw,3.1rem);text-shadow:0 10px 26px rgba(15,36,66,.25);background:linear-gradient(120deg,#ff9a3c,#3f8bff);-webkit-background-clip:text;background-clip:text;color:transparent;}
+    .cover-cta{margin:0 auto;max-width:520px;color:var(--muted);}
+    .start-btn,.ghost-btn,.qr-btn,.validate-btn{border:none;border-radius:999px;padding:14px 24px;font-size:1rem;font-weight:600;cursor:pointer;transition:transform .2s,box-shadow .2s;}
+    .start-btn{background:linear-gradient(120deg,var(--accent),var(--accent-dark));color:#fff;box-shadow:0 18px 34px rgba(47,96,255,.35);width:100%;}
+    .validate-btn{background:linear-gradient(120deg,var(--accent-alt),var(--accent-dark));color:#fff;box-shadow:0 18px 34px rgba(47,96,255,.35);width:100%;margin-top:16px;}
+    .start-btn:hover{transform:translateY(-1px);}
+    .ghost-btn{background:transparent;border:2px solid var(--border);color:var(--accent);}
+    .enter-btn{width:auto;padding:12px 36px;}
+    .landing-hero{text-align:center;margin-bottom:26px;}
+    .settings-panel{background:#eef5ff;border-radius:28px;padding:24px 28px 30px;border:1px solid var(--border);box-shadow:inset 0 0 0 1px rgba(255,255,255,.4);display:flex;flex-direction:column;gap:20px;}
+    .identity-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+    .identity-field{flex:1 1 130px;max-width:180px;background:#fff;border-radius:14px;border:1px solid var(--border);padding:8px 10px;display:flex;flex-direction:column;gap:2px;box-shadow:0 4px 14px rgba(15,36,66,.1);}
+    .identity-field.identity-field-wide{flex:1 1 100%;max-width:none;}
+    .identity-field label{font-size:.68rem;font-weight:700;letter-spacing:.08em;color:var(--accent-dark);}
+    .identity-field input{border-radius:8px;border:2px solid transparent;padding:6px 8px;font-size:.85rem;min-height:34px;}
+    .identity-field input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(63,139,255,.2);}
+    .identity-note{margin:0;font-size:.8rem;color:var(--muted);}
+    .mode-blocks{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;justify-items:center;}
+    .mode-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:6px;}
+    .mode-actions .link-btn{background:rgba(255,255,255,.9);border:1px solid rgba(63,139,255,.35);border-radius:999px;padding:8px 14px;box-shadow:0 12px 30px rgba(63,139,255,.12);}
+    .mode-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;}
+    .mode-card{border-radius:24px;padding:20px;color:#fff;display:flex;flex-direction:column;gap:12px;min-height:180px;box-shadow:0 20px 35px rgba(15,36,66,.18);width:100%;align-items:center;text-align:center;}
+    .mode-card.full{grid-column:1/-1;min-height:210px;justify-self:stretch;}
+    .mode-card:not(.full){max-width:300px;}
+    .mode-card h3{margin:0;font-size:1.1rem;letter-spacing:.05em;}
+    .mode-card p{margin:0;font-size:.9rem;opacity:.95;}
+    .mode-card .tense-options{margin-top:auto;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%;}
+    .tense-option{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.7);background:rgba(255,255,255,.2);}
+    .tense-option input{accent-color:#fff;}
+    .mode-indicatif{background:linear-gradient(140deg,#1f6bff,#4794ff);}
+    .mode-conditionnel{background:linear-gradient(140deg,#ff6f91,#ff9770);}
+    .mode-subjonctif{background:linear-gradient(140deg,#7c4dff,#b18cff);}
+    .mode-imperatif{background:linear-gradient(140deg,#15c3a2,#3ae9a5);}
+    .settings-warning{min-height:1.2em;color:#d64545;font-weight:600;margin:0;}
+    .exercise-header{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;}
+    .exercise-layout{display:flex;flex-direction:column;gap:18px;}
+    .exercise-panel{display:flex;flex-direction:column;gap:18px;}
+    .emoji-area{display:flex;flex-direction:column;gap:14px;background:#fdf7ff;border-radius:22px;padding:18px;border:1px solid var(--border);box-shadow:0 25px 50px rgba(15,36,66,.08);}
+    .scoreboard{display:flex;justify-content:center;gap:16px;font-size:1.05rem;}
+    .score-card{padding:8px 15px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.5);border-radius:12px;}
+    .score-card .score-label{font-weight:700;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+    .score-card .score-value{font-size:1.3rem;font-weight:700;letter-spacing:.02em;}
+    .session-summary{background:#fff3f0;border-radius:18px;padding:12px 16px;margin-top:10px;color:#472d2a;font-weight:600;font-size:1rem;text-align:center;box-shadow:0 12px 24px rgba(15,36,66,.08);}
+    #open-qr-btn{width:100%;margin-top:6px;font-weight:700;}
+    .question-card{background:#f1f4ff;border-radius:24px;padding:24px;text-align:center;margin-bottom:18px;box-shadow:0 18px 30px rgba(15,36,66,.1);}
+    #answer-input{text-align:center;font-size:1.6rem;font-weight:700;padding:14px 18px;border-radius:16px;border:1px solid rgba(63,139,255,.35);}
+    .question-card .prompt{font-size:1.78rem;font-weight:700;margin:12px 0 18px;}
+    .verb-infinite{font-size:2rem;font-weight:800;margin:0;color:var(--accent-dark);}
+    .sentence{font-size:1.6rem;font-weight:700;color:var(--ink);}
+    .emoji-progress{display:flex;flex-direction:column;gap:4px;padding:6px 10px;background:#fff;border-radius:14px;box-shadow:inset 0 0 0 1px rgba(63,139,255,.1);}
+    .emoji-meter{position:relative;display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1px rgba(63,139,255,.1);overflow:hidden;font-size:.95rem;}
+    .emoji-meter::before{content:"";position:absolute;inset:0;width:var(--fill,0%);background:linear-gradient(120deg,var(--accent),var(--accent-dark));opacity:.35;transition:width .3s ease;}
+    .emoji-meter span{position:relative;z-index:1;font-weight:700;}
+    .error-pop{margin-top:12px;padding:10px 14px;border-radius:16px;background:rgba(255,86,120,.12);color:#d64545;font-weight:600;box-shadow:inset 0 0 0 1px rgba(255,86,120,.25);opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s;}
+    .error-pop.visible{opacity:1;transform:translateY(0);}
+    .feedback{min-height:1.2em;font-weight:600;margin:12px 0 6px;}
+    .feedback.success{color:#18804b;}
+    .feedback.error{color:#c73737;}
+    .rule-hint{min-height:2.4em;}
+    .link-btn{border:none;background:none;padding:0;margin-top:4px;font-size:.9rem;color:var(--accent-dark);font-weight:600;text-decoration:underline;cursor:pointer;}
+    .question-count-options{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+    .question-count-options .count-option{min-width:40px;border:none;border-radius:999px;padding:6px 0;font-weight:700;font-size:.95rem;background:rgba(63,139,255,.1);color:var(--accent-dark);cursor:pointer;transition:background .25s,transform .25s;}
+    .question-count-options .count-option.selected{background:linear-gradient(120deg,var(--accent),var(--accent-dark));color:#fff;box-shadow:0 12px 25px rgba(47,96,255,.3);}
+    #verb-availability-note{margin:6px 0 0;font-size:.85rem;color:#b64545;font-weight:600;}
+    .phrase-summary{margin:6px 0 0;font-size:.85rem;color:var(--muted);}
+    .modal{position:fixed;inset:0;background:rgba(8,11,27,.55);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;visibility:hidden;transition:opacity .25s;z-index:10;}
+    .modal.open{opacity:1;visibility:visible;}
+    .modal-dialog{width:min(460px,100%);background:#fff;border-radius:28px;padding:24px;box-shadow:0 25px 60px rgba(0,0,0,.25);}
+    .qr-modal-body{display:flex;flex-direction:column;gap:10px;}
+    .qr-session-score,.qr-tense-list{margin:0;font-size:.95rem;color:var(--ink);letter-spacing:.02em;}
+    .qr-tense-list{font-weight:600;}
+    .qr-code-wrapper{display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:10px;}
+    #qr-code{min-height:320px;display:flex;align-items:center;justify-content:center;}
+    #qr-code canvas,#qr-code img{border-radius:0;border:12px solid #fff;width:320px!important;height:320px!important;box-shadow:0 12px 24px rgba(15,36,66,.16);background:#fff;}
+    .qr-actions{display:flex;flex-direction:column;gap:8px;width:100%;}
+    #qr-download-btn{width:100%;}
+    .qr-reminder{margin:0;font-size:.85rem;color:var(--muted);text-align:center;}
+    .resume-modal-text{margin:0;font-size:.95rem;color:var(--muted);}
+    .resume-actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-end;margin-top:18px;}
+    .qr-btn{border:none;border-radius:999px;padding:12px 16px;font-size:.95rem;font-weight:600;background:linear-gradient(120deg,var(--accent),var(--accent-dark));color:#fff;box-shadow:0 12px 30px rgba(47,96,255,.35);}
+    @media(max-width:980px){.exercise-layout{grid-template-columns:1fr;}}
+    @media(max-width:640px){.app{padding:20px;}button{width:100%;}}
   </style>
 </head>
 <body>
-
-  <!-- PAGE DE GARDE -->
-  <section class="cover">
-    <div class="box">
-      <h1>🎄 Cliquez pour avoir<br>mes vœux</h1>
-      <button id="open">Voir mes vœux 🎁</button>
+<main class="app">
+  <section id="cover-screen" class="screen active" aria-hidden="false">
+    <div class="cover-hero">
+      <p class="cover-logo">ConjuFun</p>
+      <h1>Atelier des conjugaisons</h1>
+      <p class="cover-cta">Sélectionne tes temps préférés et libère l’emoji du cerveau.</p>
+      <button class="start-btn enter-btn" id="enter-settings">Démarrer</button>
     </div>
   </section>
-
-  <!-- OVERLAY -->
-  <div id="overlay" class="overlay">
-    <canvas id="snow"></canvas>
-    <div class="finger">🖕</div>
-    <div class="hint">Clique ou Échap pour fermer</div>
+  <section id="landing-screen" class="screen" aria-hidden="true">
+    <div class="landing-hero">
+      <p class="app-tagline">MISSION CONJUGAISON</p>
+      <h1>PRÉPARE TA SÉANCE</h1>
+      <p class="subtitle">Prénom, classe, nombre de verbes puis sélection des temps.</p>
+    </div>
+    <div class="settings-panel" aria-label="Paramètres de l'entraînement">
+      <div class="identity-row">
+        <div class="identity-field">
+          <label for="student-firstname">Prénom</label>
+          <input id="student-firstname" type="text" placeholder="Entre ton prénom" />
+        </div>
+        <div class="identity-field">
+          <label for="student-lastname">Nom</label>
+          <input id="student-lastname" type="text" placeholder="Optionnel" />
+        </div>
+        <div class="identity-field">
+          <label for="student-class">Classe</label>
+          <input id="student-class" type="text" placeholder="Ex : 4B" />
+        </div>
+        <div class="identity-field identity-field-wide">
+          <label for="question-limit">Nombre de verbes</label>
+          <input id="question-limit" type="hidden" value="10" />
+        <div class="question-count-options" role="group" aria-label="Choix du nombre de phrases">
+          <button type="button" class="count-option" data-count="10">10</button>
+          <button type="button" class="count-option" data-count="15">15</button>
+          <button type="button" class="count-option" data-count="20">20</button>
+          <button type="button" class="count-option" data-count="25">25</button>
+          <button type="button" class="count-option" data-count="30">30</button>
+        </div>
+        <p class="phrase-summary">
+          Verbes demandés : <span id="selected-verb-count">10</span>,
+          disponibles selon les temps choisis : <span id="available-verb-count">0</span>.
+        </p>
+          <p class="identity-note">Jusqu'à <strong id="question-max-count">0</strong> phrases disponibles.</p>
+          <p class="identity-note" id="verb-availability-note"></p>
+        </div>
+      </div>
+      <div class="mode-blocks" id="tense-options"></div>
+      <div class="mode-actions">
+        <button type="button" class="link-btn" id="select-all-modes">Tout sélectionner</button>
+        <button type="button" class="link-btn" id="clear-all-modes">Tout désélectionner</button>
+      </div>
+      <p class="settings-warning" id="settings-warning"></p>
+      <button class="start-btn" id="start-session">Lancer la session fun 🚀</button>
+    </div>
+  </section>
+  <section id="exercise-screen" class="screen" aria-hidden="true">
+    <div class="exercise-header">
+      <div>
+        <h2>Zone d'entraînement</h2>
+        <p class="subtitle">Lis le conseil en cas d'erreur puis retente !</p>
+      </div>
+      <button class="ghost-btn" id="restart-session">Revenir aux options</button>
+    </div>
+    <div class="exercise-layout">
+      <div class="exercise-panel">
+        <section class="question-card" aria-live="polite">
+          <p class="question-label" id="tense-label"></p>
+          <p class="verb-infinite" id="verb-infinitive"></p>
+          <p class="prompt sentence" id="prompt">Paramètre ta séance pour commencer.</p>
+          <input id="answer-input" type="text" placeholder="Tape la conjugaison" autocomplete="off" />
+          <div id="error-pop" class="error-pop" role="status"></div>
+          <p class="feedback" id="feedback"></p>
+          <div class="rule-hint" id="rule-hint">Les conseils apparaîtront ici.</div>
+          <button id="check-btn" class="validate-btn">Valider</button>
+        </section>
+        <div class="session-summary" id="session-summary">Bilan à venir : termine une session pour voir les résultats et générer le QR.</div>
+        <button id="open-qr-btn" class="ghost-btn" disabled>Ouvrir le QR pour ScanProf</button>
+        <div class="emoji-area">
+          <div class="emoji-progress">
+            <div class="emoji-meter" id="emoji-meter">
+              <span class="emoji-icon">🧠</span>
+              <span class="emoji-percent" id="emoji-meter-label">0%</span>
+            </div>
+            <p class="emoji-caption">L'emoji se remplit à chaque réussite.</p>
+          </div>
+          <section class="scoreboard centered">
+            <div class="score-card">
+              <p class="score-label">Question</p>
+              <p class="score-value"><span id="question-count">0</span>/<span id="question-total">0</span></p>
+            </div>
+            <div class="score-card">
+              <p class="score-label">Score</p>
+              <p class="score-value" id="score">0</p>
+            </div>
+            <div class="score-card">
+              <p class="score-label">Précision</p>
+              <p class="score-value" id="accuracy-label">0%</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="modal" id="conjugation-modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Conjugaison complète</h3>
+        <button class="ghost-btn" id="modal-close-btn">Fermer ✕</button>
+      </div>
+      <p class="modal-verb" id="modal-verb"></p>
+      <p class="modal-aux" id="modal-aux"></p>
+      <ul class="modal-list" id="modal-list"></ul>
+    </div>
   </div>
+  <div class="modal" id="qr-session-modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>QR ScanProf</h3>
+        <button class="ghost-btn" id="qr-close-btn">Fermer ✕</button>
+      </div>
+      <div class="qr-modal-body">
+        <p id="qr-session-summary"></p>
+        <p id="qr-session-score" class="qr-session-score"></p>
+        <p id="qr-tense-list" class="qr-tense-list"></p>
+        <p class="qr-hint" id="qr-status">Complète ton profil et termine une séance pour générer ton QR.</p>
+        <div class="qr-code-wrapper">
+          <div id="qr-code" aria-live="polite"></div>
+          <div class="qr-actions">
+            <button class="ghost-btn" id="qr-download-btn" disabled>Télécharger le QR</button>
+            <p class="qr-reminder">Scanne puis enregistre le PNG pour le partager avec ScanProf.</p>
+          </div>
+        </div>
+        <button class="qr-btn" id="qr-new-session-btn">Nouvelle séance</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal" id="resume-modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Nouvelle séance</h3>
+        <button class="ghost-btn" id="resume-cancel-btn">Fermer ✕</button>
+      </div>
+      <p class="resume-modal-text">Tu as déjà un bilan enregistré. Souhaites-tu repartir de zéro ou cumuler les prochains résultats dans le même QR&nbsp;?</p>
+      <div class="resume-actions">
+        <button class="ghost-btn" id="resume-continue-btn">Continuer la séance</button>
+        <button class="qr-btn" id="resume-reset-btn">Réinitialiser</button>
+      </div>
+    </div>
+  </div>
+</main>
+<script src="qrcode.min.js"></script>
+<script src="verb-dictionary.js"></script>
+<script>
+(function () {
+  const screens = {
+    cover: document.getElementById("cover-screen"),
+    landing: document.getElementById("landing-screen"),
+    exercise: document.getElementById("exercise-screen")
+  };
 
-  <script>
-    const btn = document.getElementById('open');
-    const overlay = document.getElementById('overlay');
-    const canvas = document.getElementById('snow');
-    const ctx = canvas.getContext('2d');
+  function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
 
-    let flakes = [];
-    let running = false;
-
-    function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+  function stripSubject(answer, subject) {
+    if (!answer) {
+      return "";
     }
-
-    function createFlakes(count = 160) {
-      flakes = Array.from({ length: count }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 2 + 1,
-        s: Math.random() * 1 + 0.5,
-        w: Math.random() * 0.5 - 0.25
-      }));
+    let normalized = answer.replace(/[()]/g, "").trim();
+    if (!subject) {
+      return normalized;
     }
+    const sanitizedSubject = subject.replace(/[()]/g, "").trim();
+    if (!sanitizedSubject) {
+      return normalized;
+    }
+    const pattern = new RegExp("^" + escapeRegExp(sanitizedSubject) + "\\s+", "i");
+    normalized = normalized.replace(pattern, "").trim();
+    return normalized;
+  }
 
-    function drawSnow() {
-      if (!running) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "rgba(255,255,255,0.9)";
-      ctx.beginPath();
-      for (const f of flakes) {
-        ctx.moveTo(f.x, f.y);
-        ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+  function normalizeClassLabel(rawValue) {
+    if (!rawValue) {
+      return "";
+    }
+    const cleaned = rawValue
+      .toUpperCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, "");
+    const match = cleaned.match(/(\d+)([A-Z])/);
+    return match ? `${match[1]}${match[2]}` : cleaned;
+  }
+
+  function sanitizeExerciseLabel(rawValue) {
+    if (!rawValue) {
+      return "";
+    }
+    return rawValue
+      .replace(/•/g, "/")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^A-Za-z0-9/()' -]/g, " ")
+      .replace(/\s*\/\s*/g, " / ")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+  }
+
+  function deriveDifficultyTag(totalQuestions, accuracy) {
+    if (!totalQuestions) {
+      return "decouverte";
+    }
+    if (totalQuestions >= 18 || accuracy >= 85) {
+      return "avance";
+    }
+    if (totalQuestions >= 12 || accuracy >= 60) {
+      return "intermediaire";
+    }
+    return "decouverte";
+  }
+  function deriveDifficultyLevel(tag) {
+    if (!tag) {
+      return 1;
+    }
+    const normalized = String(tag).toLowerCase();
+    if (normalized.includes("avance")) {
+      return 3;
+    }
+    if (normalized.includes("inter")) {
+      return 2;
+    }
+    return 1;
+  }
+  const elements = {
+    firstName: document.getElementById("student-firstname"),
+    lastName: document.getElementById("student-lastname"),
+    className: document.getElementById("student-class"),
+    questionLimit: document.getElementById("question-limit"),
+    questionMaxCount: document.getElementById("question-max-count"),
+    selectedVerbCount: document.getElementById("selected-verb-count"),
+    availableVerbCount: document.getElementById("available-verb-count"),
+    availabilityNote: document.getElementById("verb-availability-note"),
+    settingsWarning: document.getElementById("settings-warning"),
+    modeBlocks: document.getElementById("tense-options"),
+    selectAllModes: document.getElementById("select-all-modes"),
+    clearModes: document.getElementById("clear-all-modes"),
+    phraseCountButtons: document.querySelectorAll(".count-option"),
+    enterBtn: document.getElementById("enter-settings"),
+    startBtn: document.getElementById("start-session"),
+    restartBtn: document.getElementById("restart-session"),
+    verbInfinitive: document.getElementById("verb-infinitive"),
+    prompt: document.getElementById("prompt"),
+    tenseLabel: document.getElementById("tense-label"),
+    answerInput: document.getElementById("answer-input"),
+    checkBtn: document.getElementById("check-btn"),
+    feedback: document.getElementById("feedback"),
+    ruleHint: document.getElementById("rule-hint"),
+    errorPop: document.getElementById("error-pop"),
+    questionCount: document.getElementById("question-count"),
+    questionTotal: document.getElementById("question-total"),
+    score: document.getElementById("score"),
+    accuracy: document.getElementById("accuracy-label"),
+    emojiMeter: document.getElementById("emoji-meter"),
+    emojiMeterLabel: document.getElementById("emoji-meter-label"),
+    modal: document.getElementById("conjugation-modal"),
+    modalClose: document.getElementById("modal-close-btn"),
+    modalVerb: document.getElementById("modal-verb"),
+    modalAux: document.getElementById("modal-aux"),
+    modalList: document.getElementById("modal-list"),
+    qrModal: document.getElementById("qr-session-modal"),
+    qrClose: document.getElementById("qr-close-btn"),
+    qrNewSession: document.getElementById("qr-new-session-btn"),
+    qrSummary: document.getElementById("qr-session-summary"),
+    qrScore: document.getElementById("qr-session-score"),
+    qrTenseList: document.getElementById("qr-tense-list"),
+    sessionSummary: document.getElementById("session-summary"),
+    openQrButton: document.getElementById("open-qr-btn"),
+    qrStatus: document.getElementById("qr-status"),
+    qrCodeHolder: document.getElementById("qr-code"),
+    qrDownload: document.getElementById("qr-download-btn"),
+    resumeModal: document.getElementById("resume-modal"),
+    resumeContinue: document.getElementById("resume-continue-btn"),
+    resumeReset: document.getElementById("resume-reset-btn"),
+    resumeCancel: document.getElementById("resume-cancel-btn")
+  };
+  const defaultHint = "Les conseils apparaîtront ici.";
+  const defaultSessionSummary = "Bilan à venir : termine une session pour générer le QR.";
+  const praisePool = ["Bravo !", "Top score !", "Gagné !", "Continue sur cette lancée !", "C'est validé !"];
+  const retryPool = ["Pas grave, retente !", "Relis la règle et poursuis.", "Tu progresses, continue.", "Essaie encore sur la suivante."];
+  const tenseCatalog = [
+    {
+      mode: "Indicatif",
+      className: "mode-indicatif",
+      fullWidth: true,
+      description: "Pour raconter les faits réels.",
+      tenses: [
+        { id: "indicatif-present", label: "Présent", helper: "Action en cours." },
+        { id: "indicatif-imparfait", label: "Imparfait", helper: "Habitudes du passé." },
+        { id: "indicatif-futur", label: "Futur simple", helper: "Actions à venir." },
+        { id: "indicatif-passe-compose", label: "Passé composé", helper: "Action achevée." }
+      ]
+    },
+    {
+      mode: "Conditionnel",
+      className: "mode-conditionnel",
+      description: "Pour imaginer et proposer.",
+      tenses: [
+        { id: "conditionnel-present", label: "Présent", helper: "Souhait ou hypothèse." }
+      ]
+    },
+    {
+      mode: "Subjonctif",
+      className: "mode-subjonctif",
+      description: "Exprime le doute ou le souhait.",
+      tenses: [
+        { id: "subjonctif-present", label: "Présent", helper: "Après que / pour que." }
+      ]
+    },
+    {
+      mode: "Impératif",
+      className: "mode-imperatif",
+      description: "Pour donner des ordres ou conseils.",
+      tenses: [
+        { id: "imperatif-present", label: "Présent", helper: "Trois personnes seulement." }
+      ]
+    }
+  ];
+  const baseDictionary = window.CONJUFUN_VERB_DICTIONARY || [];
+  const questionBank = (function () {
+    if (!Array.isArray(baseDictionary)) {
+      return [];
+    }
+    const collection = [];
+    baseDictionary.forEach(verb => {
+      if (!verb.entries || !Array.isArray(verb.entries)) {
+        return;
       }
-      ctx.fill();
-
-      for (const f of flakes) {
-        f.y += f.s;
-        f.x += f.w;
-        if (f.y > canvas.height) {
-          f.y = -5;
-          f.x = Math.random() * canvas.width;
-        }
-        if (f.x > canvas.width) f.x = 0;
-        if (f.x < 0) f.x = canvas.width;
-      }
-      requestAnimationFrame(drawSnow);
-    }
-
-    async function openGift() {
-      try {
-        if (!document.fullscreenElement) {
-          await document.documentElement.requestFullscreen();
-        }
-      } catch(e) {}
-      overlay.classList.add('show');
-      resize();
-      createFlakes();
-      running = true;
-      drawSnow();
-    }
-
-    function closeGift() {
-      overlay.classList.remove('show');
-      running = false;
-      if (document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {});
-      }
-    }
-
-    btn.addEventListener('click', openGift);
-    overlay.addEventListener('click', closeGift);
-    window.addEventListener('keydown', e => {
-      if (e.key === 'Escape') closeGift();
+      verb.entries.forEach(entry => {
+        const complements = Array.isArray(entry.complements) && entry.complements.length ? entry.complements : [""];
+        const subjects = Array.isArray(entry.subjects) ? entry.subjects : [];
+        const answers = Array.isArray(entry.answers) ? entry.answers : [];
+        const acceptedAnswers = Array.isArray(entry.acceptedAnswers) ? entry.acceptedAnswers : [];
+        complements.forEach(complement => {
+          subjects.forEach((subject, index) => {
+            const answer = answers[index];
+            if (!answer) {
+              return;
+            }
+            const trimmedComplement = complement ? ` ${complement}` : "";
+            const promptText = `${subject} ...${trimmedComplement}`;
+            const shortAnswer = stripSubject(answer, subject);
+            if (!shortAnswer) {
+              return;
+            }
+            const acceptedList = Array.isArray(acceptedAnswers[index])
+              ? acceptedAnswers[index].map(a => stripSubject(a, subject)).filter(Boolean)
+              : [];
+            const finalAccepted = acceptedList.length ? acceptedList : [shortAnswer];
+            collection.push({
+              tenseId: entry.tenseId,
+              tenseLabel: entry.tenseLabel,
+              modeLabel: entry.modeLabel,
+              rule: entry.rule,
+              infinitive: verb.infinitive,
+              auxiliary: entry.auxiliary || "Pas d'auxiliaire.",
+              fullConjugation: entry.fullConjugation || answers,
+              prompt: promptText,
+              answer: shortAnswer,
+              acceptedAnswers: finalAccepted
+            });
+          });
+        });
+      });
     });
-    window.addEventListener('resize', resize);
-  </script>
+    return collection;
+  })();
+  let lastSummary = null;
+  let lastScanProfPayloadData = null;
+  let lastScanProfPayloadString = "";
+  let lastQrCanvas = null;
+  const MAX_SCANPROF_EXERCISES = 8;
+  const state = {
+    selectedTenses: new Set(),
+    questions: [],
+    currentIndex: 0,
+    correctAnswers: 0,
+    totalAnswered: 0,
+    awaitingNext: false,
+    sessionRunning: false,
+    sessionMeta: null,
+    history: [],
+    requestedQuestions: Number(elements.questionLimit.value) || 10,
+    errorCountForQuestion: 0,
+    activeQuestion: null,
+    advanceAfterModalClose: false,
+    pendingStartRequest: false
+  };
+  const storageKey = "conjufun-scanprof";
+  const scanProfData = loadScanProfData();
+  if (!Array.isArray(scanProfData.exercices)) {
+    scanProfData.exercices = [];
+  }
+  if (scanProfData.prenom) {
+    elements.firstName.value = scanProfData.prenom;
+  }
+  if (scanProfData.nom && elements.lastName) {
+    elements.lastName.value = scanProfData.nom;
+  }
+  if (scanProfData.classe) {
+    elements.className.value = scanProfData.classe;
+  }
 
+  function showScreen(screenKey) {
+    Object.entries(screens).forEach(([key, node]) => {
+      const isActive = key === screenKey;
+      node.classList.toggle("active", isActive);
+      node.setAttribute("aria-hidden", isActive ? "false" : "true");
+    });
+  }
+
+  function setPhraseCountValue(count) {
+    const normalized = Number(count) || 10;
+    state.requestedQuestions = normalized;
+    elements.questionLimit.value = normalized;
+    elements.phraseCountButtons.forEach(button => {
+      const buttonValue = Number(button.dataset.count);
+      button.classList.toggle("selected", buttonValue === normalized);
+    });
+    elements.selectedVerbCount.textContent = normalized;
+    updatePhraseSummary();
+  }
+
+  function buildModeCards() {
+    elements.modeBlocks.innerHTML = "";
+    const fragment = document.createDocumentFragment();
+    tenseCatalog.forEach(mode => {
+      const card = document.createElement("article");
+      const extraClass = mode.fullWidth ? " full" : "";
+      card.className = `mode-card ${mode.className}${extraClass}`;
+      const title = document.createElement("h3");
+      title.textContent = mode.mode;
+      const desc = document.createElement("p");
+      desc.textContent = mode.description;
+      const optionsWrapper = document.createElement("div");
+      optionsWrapper.className = "tense-options";
+      mode.tenses.forEach(tense => {
+        const option = document.createElement("label");
+        option.className = "tense-option";
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = tense.id;
+        checkbox.addEventListener("change", () => {
+          if (checkbox.checked) {
+            state.selectedTenses.add(tense.id);
+          } else {
+            state.selectedTenses.delete(tense.id);
+          }
+          updateAvailableCount();
+        });
+        const labelText = document.createElement("span");
+        labelText.textContent = `${tense.label} · ${tense.helper}`;
+        option.append(checkbox, labelText);
+        optionsWrapper.appendChild(option);
+      });
+      card.append(title, desc, optionsWrapper);
+      fragment.appendChild(card);
+    });
+    elements.modeBlocks.appendChild(fragment);
+    updateAvailableCount();
+  }
+
+  function toggleModeSelection(selectAll) {
+    state.selectedTenses.clear();
+    const checkboxes = elements.modeBlocks.querySelectorAll("input[type=checkbox]");
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = selectAll;
+      if (selectAll) {
+        state.selectedTenses.add(checkbox.value);
+      }
+    });
+    updateAvailableCount();
+  }
+
+  function updateAvailableCount() {
+    const available = getSelectedQuestions().length;
+    elements.questionMaxCount.textContent = available;
+    elements.questionLimit.max = Math.max(available, 1);
+    updatePhraseSummary();
+  }
+
+  function updatePhraseSummary() {
+    const available = getSelectedQuestions().length;
+    elements.availableVerbCount.textContent = available;
+    if (!available) {
+      elements.availabilityNote.textContent = "Choisis au moins un temps pour débloquer les phrases.";
+    } else if (available < state.requestedQuestions) {
+      elements.availabilityNote.textContent = `Seulement ${available} phrases disponibles pour cette sélection. Ajoute des temps ou choisis un autre mode si tu veux ${state.requestedQuestions}.`;
+    } else {
+      elements.availabilityNote.textContent = "";
+    }
+  }
+
+  function getSelectedQuestions() {
+    if (!state.selectedTenses.size) {
+      return [];
+    }
+    return questionBank.filter(item => state.selectedTenses.has(item.tenseId));
+  }
+
+  function normalizeAnswer(value) {
+    return value
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[’']/g, "'")
+      .replace(/\s+/g, " ")
+      .replace(/\s*'\s*/g, "'")
+      .trim();
+  }
+
+  function identityReadyForStart() {
+    const firstname = elements.firstName.value.trim();
+    const className = normalizeClassLabel(elements.className.value.trim());
+    return Boolean(firstname && className);
+  }
+
+  function requestSessionStart() {
+    if (hasStoredScanProfHistory() && identityReadyForStart() && elements.resumeModal) {
+      state.pendingStartRequest = true;
+      openModal(elements.resumeModal);
+      return;
+    }
+    startSession();
+  }
+
+  function proceedWithSessionStart(resetHistory = false) {
+    if (resetHistory) {
+      resetScanProfHistory();
+    }
+    if (elements.resumeModal) {
+      closeModal(elements.resumeModal);
+    }
+    state.pendingStartRequest = false;
+    startSession();
+  }
+
+  function startSession() {
+    const firstname = elements.firstName.value.trim();
+    const lastName = elements.lastName ? elements.lastName.value.trim() : "";
+    const rawClassName = elements.className.value.trim();
+    const normalizedClassName = normalizeClassLabel(rawClassName);
+    const requestedQuestions = state.requestedQuestions || Math.max(1, Number(elements.questionLimit.value) || 1);
+    const availableQuestions = getSelectedQuestions();
+    if (!firstname) {
+      elements.settingsWarning.textContent = "Entre ton prénom pour personnaliser la session.";
+      elements.firstName.focus();
+      return;
+    }
+    if (!normalizedClassName) {
+      elements.settingsWarning.textContent = "Indique ta classe (ex. 4B) pour générer le QR ScanProf.";
+      elements.className.focus();
+      return;
+    }
+    if (!availableQuestions.length) {
+      elements.settingsWarning.textContent = "Choisis au moins un temps pour générer des phrases.";
+      return;
+    }
+    elements.className.value = normalizedClassName;
+    const questionPool = [];
+    const questionTotal = requestedQuestions;
+    while (questionPool.length < requestedQuestions) {
+      questionPool.push(...shuffleArray(availableQuestions));
+    }
+    state.questions = shuffleArray(questionPool.slice(0, requestedQuestions));
+    updateStoredIdentity(firstname, normalizedClassName, lastName);
+    state.currentIndex = 0;
+    state.correctAnswers = 0;
+    state.totalAnswered = 0;
+    state.awaitingNext = false;
+    state.sessionRunning = true;
+    state.sessionMeta = { firstname, lastName, className: normalizedClassName, questionTotal, startedAt: new Date() };
+    state.history = [];
+    elements.settingsWarning.textContent = "";
+    elements.answerInput.disabled = false;
+    elements.checkBtn.disabled = false;
+    showScreen("exercise");
+    showQuestion();
+    updateScoreboard();
+    updateEmojiMeter();
+  }
+
+  function showQuestion() {
+    const question = state.questions[state.currentIndex];
+    if (!question) {
+      finishSession();
+      return;
+    }
+    state.activeQuestion = question;
+    state.awaitingNext = false;
+    state.errorCountForQuestion = 0;
+    state.advanceAfterModalClose = false;
+    elements.tenseLabel.textContent = `${question.modeLabel} • ${question.tenseLabel}`;
+    elements.verbInfinitive.textContent = question.infinitive;
+    elements.prompt.textContent = question.prompt;
+    elements.answerInput.value = "";
+    elements.answerInput.disabled = false;
+    elements.checkBtn.disabled = false;
+    elements.feedback.textContent = "";
+    elements.feedback.className = "feedback";
+    elements.ruleHint.textContent = `Astuce : ${question.rule}`;
+    clearError();
+    elements.answerInput.focus();
+    updateScoreboard();
+  }
+
+  function handleCheck() {
+    if (!state.sessionRunning || state.awaitingNext) {
+      return;
+    }
+    if (!state.activeQuestion) {
+      return;
+    }
+    const proposal = elements.answerInput.value.trim();
+    if (!proposal) {
+      showError("Tape ta réponse avant de valider.");
+      return;
+    }
+    const normalizedProposal = normalizeAnswer(proposal);
+    const accepted = state.activeQuestion.inputAnswers || state.activeQuestion.acceptedAnswers || [state.activeQuestion.answer];
+    const isCorrect = accepted.some(item => normalizeAnswer(item) === normalizedProposal);
+    if (isCorrect) {
+      finalizeQuestion(true, proposal);
+      return;
+    }
+    state.errorCountForQuestion += 1;
+    if (state.errorCountForQuestion === 1) {
+      elements.feedback.textContent = `Oups ! ${randomItem(retryPool)}`;
+      elements.feedback.className = "feedback error";
+      showError("Relis la règle et retente ta réponse.");
+      return;
+    }
+    finalizeQuestion(false, proposal);
+  }
+
+  function finalizeQuestion(isCorrect, proposal = "") {
+    if (!state.activeQuestion) {
+      return;
+    }
+    const attempts = Math.max(1, state.errorCountForQuestion + 1);
+    if (isCorrect) {
+      state.correctAnswers += 1;
+    }
+    state.totalAnswered += 1;
+    state.awaitingNext = true;
+    elements.answerInput.disabled = true;
+    elements.checkBtn.disabled = true;
+    const historyEntry = {
+      prompt: state.activeQuestion.prompt,
+      expected: state.activeQuestion.answer,
+      given: proposal,
+      correct: isCorrect,
+      tense: state.activeQuestion.tenseLabel,
+      attempts,
+    };
+    state.history.push(historyEntry);
+    updateScoreboard();
+    updateEmojiMeter();
+    const continueMsg = " La phrase suivante arrive automatiquement.";
+    if (isCorrect) {
+      elements.feedback.textContent = `${randomItem(praisePool)}${continueMsg}`;
+      elements.feedback.className = "feedback success";
+      clearError();
+      setTimeout(() => {
+        if (!state.sessionRunning) {
+          return;
+        }
+        state.awaitingNext = false;
+        advanceQuestion();
+      }, 650);
+    } else {
+      elements.feedback.textContent = `Réponse attendue : ${state.activeQuestion.answer}.${continueMsg}`;
+      elements.feedback.className = "feedback error";
+      showError("Voici la conjugaison complète pour t'aider.");
+      state.advanceAfterModalClose = true;
+      openConjugationModal(state.activeQuestion, { autoAdvance: true });
+    }
+    state.errorCountForQuestion = 0;
+  }
+
+  function advanceQuestion() {
+    state.currentIndex += 1;
+    if (state.currentIndex >= state.questions.length) {
+      finishSession();
+      return;
+    }
+    showQuestion();
+  }
+
+  function finishSession() {
+    state.sessionRunning = false;
+    state.awaitingNext = false;
+    elements.answerInput.value = "";
+    elements.answerInput.disabled = true;
+    elements.checkBtn.disabled = true;
+    const total = state.questions.length;
+    const accuracy = total ? Math.round((state.correctAnswers / total) * 100) : 0;
+    elements.prompt.textContent = "Session terminée 🎉";
+    elements.tenseLabel.textContent = "";
+    elements.feedback.textContent = `Bravo ${state.sessionMeta.firstname} : ${state.correctAnswers}/${total} (${accuracy}%).`;
+    elements.feedback.className = "feedback success";
+    elements.ruleHint.textContent = "Clique sur « Revenir aux options » pour relancer une session.";
+    recordSessionSummary(accuracy);
+    state.sessionMeta = null;
+  }
+
+  function resetExerciseView() {
+    state.questions = [];
+    state.sessionRunning = false;
+    state.history = [];
+    state.currentIndex = 0;
+    state.errorCountForQuestion = 0;
+    state.activeQuestion = null;
+    state.sessionMeta = null;
+    state.advanceAfterModalClose = false;
+    state.correctAnswers = 0;
+    state.totalAnswered = 0;
+    elements.prompt.textContent = "Paramètre ta séance pour commencer.";
+    elements.tenseLabel.textContent = "";
+    elements.answerInput.value = "";
+    elements.answerInput.disabled = true;
+    elements.checkBtn.disabled = true;
+    elements.feedback.textContent = "";
+    elements.feedback.className = "feedback";
+    elements.ruleHint.textContent = defaultHint;
+    elements.questionCount.textContent = "0";
+    elements.questionTotal.textContent = "0";
+    elements.score.textContent = "0";
+    elements.accuracy.textContent = "0%";
+    elements.emojiMeter.style.setProperty("--fill", "0%");
+    elements.emojiMeterLabel.textContent = "0%";
+    if (elements.sessionSummary) {
+      elements.sessionSummary.textContent = defaultSessionSummary;
+    }
+    if (elements.openQrButton) {
+      elements.openQrButton.disabled = true;
+    }
+  }
+
+  function updateScoreboard() {
+    if (!state.questions.length) {
+      elements.questionCount.textContent = "0";
+      elements.questionTotal.textContent = "0";
+      elements.score.textContent = "0";
+      elements.accuracy.textContent = "0%";
+      return;
+    }
+    const total = state.questions.length;
+    const answeredCount = Math.min(state.currentIndex + 1, total);
+    const accuracy = state.totalAnswered ? Math.round((state.correctAnswers / state.totalAnswered) * 100) : 0;
+    elements.questionCount.textContent = answeredCount;
+    elements.questionTotal.textContent = total;
+    elements.score.textContent = state.correctAnswers;
+    elements.accuracy.textContent = `${accuracy}%`;
+  }
+
+  function updateEmojiMeter() {
+    if (!state.questions.length) {
+      elements.emojiMeter.style.setProperty("--fill", "0%");
+      elements.emojiMeterLabel.textContent = "0%";
+      return;
+    }
+    const fill = Math.round((state.correctAnswers / state.questions.length) * 100);
+    elements.emojiMeter.style.setProperty("--fill", `${fill}%`);
+    elements.emojiMeterLabel.textContent = `${fill}%`;
+  }
+
+  function randomItem(list) {
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
+  function shuffleArray(list) {
+    const copy = [...list];
+    for (let i = copy.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  function showError(message) {
+    elements.errorPop.textContent = message;
+    elements.errorPop.classList.add("visible");
+  }
+
+  function clearError() {
+    elements.errorPop.textContent = "";
+    elements.errorPop.classList.remove("visible");
+  }
+
+  function openConjugationModal(question, options = {}) {
+    if (!question) return;
+    state.advanceAfterModalClose = Boolean(options.autoAdvance);
+    elements.modalVerb.textContent = `${question.infinitive} – ${question.modeLabel} ${question.tenseLabel}`;
+    elements.modalAux.textContent = question.auxiliary;
+    elements.modalList.innerHTML = "";
+    question.fullConjugation.forEach(form => {
+      const li = document.createElement("li");
+      li.textContent = form;
+      elements.modalList.appendChild(li);
+    });
+    openModal(elements.modal);
+  }
+
+  function openModal(node) {
+    node.classList.add("open");
+    node.setAttribute("aria-hidden", "false");
+  }
+
+  function closeModal(node) {
+    const wasConjugationModal = node === elements.modal;
+    const wasResumeModal = node === elements.resumeModal;
+    node.classList.remove("open");
+    node.setAttribute("aria-hidden", "true");
+    if (wasConjugationModal && state.advanceAfterModalClose) {
+      state.advanceAfterModalClose = false;
+      state.awaitingNext = false;
+      advanceQuestion();
+    }
+    if (wasResumeModal) {
+      state.pendingStartRequest = false;
+    }
+  }
+
+  function recordSessionSummary(accuracy) {
+    if (!state.sessionMeta) {
+      return;
+    }
+    const total = state.questions.length;
+    const usedTenses = Array.from(new Set(state.history.map(item => item.tense))).sort();
+    const baseSummaryTitle = usedTenses.length ? usedTenses.join(" / ") : `Seance ${formatFrenchDate(state.sessionMeta.startedAt)}`;
+    const summaryTitle = sanitizeExerciseLabel(baseSummaryTitle) || "Seance Conjugaison";
+    const summary = {
+      exo: summaryTitle,
+      resultat: `${state.correctAnswers}/${total}`,
+      score: state.correctAnswers,
+      total,
+      accuracy,
+      date: state.sessionMeta.startedAt.toISOString(),
+      name: state.sessionMeta.firstname,
+      lastName: state.sessionMeta.lastName || "",
+      className: state.sessionMeta.className || "classe ?",
+      tenses: usedTenses,
+      details: state.history.map(item => ({
+        prompt: item.prompt,
+        expected: item.expected,
+        given: item.given,
+        correct: item.correct,
+        tense: item.tense,
+        attempts: item.attempts
+      }))
+    };
+    appendExerciseRecord(summary);
+    lastSummary = summary;
+    lastScanProfPayloadData = buildScanProfPayload();
+    const canGenerateQr = Boolean(lastScanProfPayloadData);
+    if (elements.openQrButton) {
+      elements.openQrButton.disabled = !canGenerateQr;
+    }
+    const displayName = summary.lastName ? `${summary.name} ${summary.lastName}` : summary.name;
+    elements.sessionSummary.textContent = `${displayName} • ${summary.className} • ${summary.resultat} • Temps sélectionnés : ${summary.tenses.join(" • ") || "n/a"}`;
+    if (!canGenerateQr) {
+      elements.qrStatus.textContent = "Complète ton prénom et ta classe pour générer ton QR ScanProf.";
+      return;
+    }
+    openQrModal(summary, lastScanProfPayloadData);
+  }
+
+  function openQrModal(summary, payloadOverride = null) {
+    const displayName = summary.lastName ? `${summary.name} ${summary.lastName}` : summary.name;
+    elements.qrSummary.textContent = `${displayName} (${summary.className}) – ${summary.resultat} • ${summary.accuracy}%`;
+    elements.qrScore.textContent = `Score : ${summary.resultat}`;
+    elements.qrTenseList.textContent = summary.tenses.length
+      ? `Temps travaillés : ${summary.tenses.join(" • ")}`
+      : "Temps travaillés : non précisés.";
+    elements.qrStatus.textContent = `Session clôturée le ${formatFrenchDate(new Date(summary.date))} · QR prêt pour ScanProf (enregistre le PNG).`;
+    const payload = payloadOverride || buildScanProfPayload();
+    if (!payload) {
+      elements.qrStatus.textContent = "Identité incomplète : indique ton prénom et ta classe pour obtenir le QR.";
+      if (elements.qrDownload) {
+        elements.qrDownload.disabled = true;
+      }
+      return;
+    }
+    lastScanProfPayloadData = payload;
+    lastQrCanvas = renderScanProfQR("qr-code", payload);
+    if (elements.qrDownload) {
+      elements.qrDownload.disabled = !lastQrCanvas;
+    }
+    openModal(elements.qrModal);
+  }
+
+  function formatFrenchDate(date) {
+    return date.toLocaleString("fr-FR", {
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  }
+
+  function renderScanProfQR(targetId, payload) {
+    const holder = typeof targetId === "string" ? document.getElementById(targetId) : targetId;
+    if (!holder) {
+      return null;
+    }
+    const jsonPayload = typeof payload === "string" ? payload : JSON.stringify(payload);
+    holder.innerHTML = "";
+    if (window.QRCode) {
+      const correctionLevel =
+        (window.QRCode.CorrectLevel && window.QRCode.CorrectLevel.H) ||
+        (window.QRErrorCorrectLevel && window.QRErrorCorrectLevel.H);
+      const options = {
+        text: jsonPayload,
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff"
+      };
+      if (correctionLevel) {
+        options.correctLevel = correctionLevel;
+      }
+      new window.QRCode(holder, options);
+      lastScanProfPayloadString = jsonPayload;
+      const node = holder.querySelector("canvas") || holder.querySelector("img");
+      return node;
+    }
+    const fallback = document.createElement("code");
+    fallback.textContent = jsonPayload;
+    holder.appendChild(fallback);
+    elements.qrStatus.textContent = "QR indisponible hors ligne : copie les données affichées.";
+    lastScanProfPayloadString = jsonPayload;
+    return null;
+  }
+
+  function downloadQrImage(node) {
+    if (!node) {
+      if (lastScanProfPayloadString) {
+        const blob = new Blob([lastScanProfPayloadString], { type: "application/json" });
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = "scanprof.json";
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 0);
+        elements.qrStatus.textContent = "QR indisponible : téléchargement JSON proposé.";
+        return;
+      }
+      elements.qrStatus.textContent = "QR indisponible : recharge la page pour générer un nouveau code.";
+      return;
+    }
+    const link = document.createElement("a");
+    if (node instanceof HTMLCanvasElement) {
+      link.href = node.toDataURL("image/png");
+    } else {
+      link.href = node.src;
+    }
+    link.download = "scanprof.png";
+    link.click();
+  }
+
+  function loadScanProfData() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(storageKey) || "{}");
+      return {
+        prenom: stored.prenom || "",
+        nom: stored.nom || "",
+        classe: stored.classe || "",
+        exercices: Array.isArray(stored.exercices) ? stored.exercices : []
+      };
+    } catch {
+      return { prenom: "", nom: "", classe: "", exercices: [] };
+    }
+  }
+
+  function hasStoredScanProfHistory() {
+    return Array.isArray(scanProfData.exercices) && scanProfData.exercices.length > 0;
+  }
+
+  function resetScanProfHistory() {
+    scanProfData.exercices = [];
+    saveScanProfData();
+    lastSummary = null;
+    lastScanProfPayloadData = null;
+    lastScanProfPayloadString = "";
+    lastQrCanvas = null;
+    if (elements.openQrButton) {
+      elements.openQrButton.disabled = true;
+    }
+    if (elements.sessionSummary) {
+      elements.sessionSummary.textContent = defaultSessionSummary;
+    }
+  }
+
+  function saveScanProfData() {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(scanProfData));
+    } catch (error) {
+      console.warn("Impossible de sauvegarder les données ScanProf :", error);
+    }
+  }
+
+  function appendExerciseRecord(summary) {
+    const normalizedClass = normalizeClassLabel(summary.className || "");
+    scanProfData.prenom = (summary.name || "").trim();
+    scanProfData.nom = (summary.lastName || "").trim();
+    scanProfData.classe = normalizedClass;
+    const difficultyTag = deriveDifficultyTag(summary.total, summary.accuracy);
+    scanProfData.exercices.unshift({
+      exo: summary.exo,
+      resultat: summary.resultat,
+      score: summary.score,
+      total: summary.total,
+      accuracy: summary.accuracy,
+      tenses: summary.tenses,
+      date: summary.date,
+      difficulte: difficultyTag,
+      difficultyLevel: deriveDifficultyLevel(difficultyTag)
+    });
+    if (scanProfData.exercices.length > 12) {
+      scanProfData.exercices.pop();
+    }
+    saveScanProfData();
+  }
+
+  function formatScanProfEntry(entry) {
+    if (!entry) {
+      return "";
+    }
+    const label = sanitizeExerciseLabel(entry.exo || "Exercice");
+    const baseScore = entry.resultat || (entry.score !== undefined && entry.total !== undefined
+      ? `${entry.score}/${entry.total}`
+      : "");
+    const result = `${label}: ${baseScore}`.trim();
+    return result.replace(/\s{2,}/g, " ");
+  }
+
+  function resolveScanProfIdentity() {
+    const prenom = (scanProfData.prenom || "").trim();
+    const classe = normalizeClassLabel(scanProfData.classe || "");
+    if (!prenom || !classe) {
+      return null;
+    }
+    const identity = { prenom, classe };
+    const nom = (scanProfData.nom || "").trim();
+    if (nom) {
+      identity.nom = nom;
+    }
+    return identity;
+  }
+
+  function buildScanProfPayload() {
+    const identity = resolveScanProfIdentity();
+    if (!identity) {
+      return null;
+    }
+    const entry = {
+      prenom: identity.prenom,
+      classe: identity.classe
+    };
+    if (identity.nom) {
+      entry.nom = identity.nom;
+    }
+    const exercises = Array.isArray(scanProfData.exercices) ? scanProfData.exercices : [];
+    const limitedExercises = exercises.slice(0, MAX_SCANPROF_EXERCISES);
+    limitedExercises.forEach((item, index) => {
+      const key = `exercice_${index + 1}`;
+      entry[key] = formatScanProfEntry(item);
+    });
+    return [entry];
+  }
+
+  function updateStoredIdentity(firstname, className, lastName = "") {
+    if (!firstname) {
+      return;
+    }
+    const normalizedClass = normalizeClassLabel(className || "");
+    scanProfData.prenom = firstname.trim();
+    scanProfData.nom = (lastName || "").trim();
+    scanProfData.classe = normalizedClass;
+    saveScanProfData();
+  }
+
+  elements.phraseCountButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      const count = Number(button.dataset.count) || 10;
+      setPhraseCountValue(count);
+    });
+  });
+  setPhraseCountValue(Number(elements.questionLimit.value));
+  elements.enterBtn.addEventListener("click", () => showScreen("landing"));
+  elements.startBtn.addEventListener("click", requestSessionStart);
+  elements.restartBtn.addEventListener("click", () => {
+    showScreen("landing");
+    resetExerciseView();
+  });
+  elements.selectAllModes.addEventListener("click", () => toggleModeSelection(true));
+  elements.clearModes.addEventListener("click", () => toggleModeSelection(false));
+  elements.checkBtn.addEventListener("click", handleCheck);
+  elements.answerInput.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleCheck();
+    }
+  });
+  elements.modalClose.addEventListener("click", () => closeModal(elements.modal));
+  elements.qrClose.addEventListener("click", () => closeModal(elements.qrModal));
+  elements.qrNewSession.addEventListener("click", () => {
+    closeModal(elements.qrModal);
+    showScreen("landing");
+  });
+  if (elements.resumeContinue) {
+    elements.resumeContinue.addEventListener("click", () => proceedWithSessionStart(false));
+  }
+  if (elements.resumeReset) {
+    elements.resumeReset.addEventListener("click", () => proceedWithSessionStart(true));
+  }
+  if (elements.resumeCancel) {
+    elements.resumeCancel.addEventListener("click", () => {
+      state.pendingStartRequest = false;
+      closeModal(elements.resumeModal);
+    });
+  }
+  document.querySelectorAll(".modal").forEach(modal => {
+    modal.addEventListener("click", event => {
+      if (event.target === modal) {
+        closeModal(modal);
+      }
+    });
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      closeModal(elements.modal);
+      closeModal(elements.qrModal);
+    }
+  });
+
+  elements.openQrButton.addEventListener("click", () => {
+    if (!lastSummary) {
+      elements.qrStatus.textContent = "Lance une session complète pour générer ton QR.";
+      return;
+    }
+    const payload = lastScanProfPayloadData || buildScanProfPayload();
+    if (!payload) {
+      elements.qrStatus.textContent = "Complète ton prénom et ta classe pour générer ton QR ScanProf.";
+      return;
+    }
+    openQrModal(lastSummary, payload);
+  });
+
+  if (elements.qrDownload) {
+    elements.qrDownload.addEventListener("click", () => downloadQrImage(lastQrCanvas));
+  }
+
+  resetExerciseView();
+  buildModeCards();
+  toggleModeSelection(false);
+})();
+</script>
 </body>
 </html>
-
